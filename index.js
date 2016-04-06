@@ -8,7 +8,7 @@ var User = module.parent.require('./user');
 var Package = require("./package.json");
 var siteConfig = module.parent.require('../config.json');
 
-var bot = {}
+var bot = {};
 var adminRoute = '/admin/plugins/discord-bot';
 var settings = {
 	"botEmail": process.env.DISCORD_BOT_EMAIL || undefined,
@@ -16,12 +16,12 @@ var settings = {
 	"botUpdateChannel": process.env.DISCORD_BOT_CHANNEL || undefined
 };
 
-var NodebbBot = {}
+var NodebbBot = {};
 
 
 //should return a list of repplies as the second callback argument and an error only if their is an error as the first callback arguemnt
 function getReplies(command,fromUser,fromUserID,callback) {
-	var repplys = []
+	var repplys = [];
 
 	if (command == "hello" || command == "hi"){
 		repplys.push("<@"+fromUserID+"> hello ");
@@ -32,7 +32,7 @@ function getReplies(command,fromUser,fromUserID,callback) {
 	}
 
 	return callback(null,repplys);
-};
+}
 
 function nodebbBotSettings(req, res, next) {
 	var data = req.body;
@@ -43,7 +43,7 @@ function nodebbBotSettings(req, res, next) {
 	};
 
 	saveSettings(newSettings, res, next);
-};
+}
 
 function fetchSettings(callback){
 	db.getObjectFields(Package.name, Object.keys(settings), function(err, newSettings){
@@ -220,6 +220,6 @@ NodebbBot.adminMenu = function(custom_header, callback) {
 	});
 
 	callback(null, custom_header);
-}
+};
 
 module.exports = NodebbBot;
