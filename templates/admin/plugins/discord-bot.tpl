@@ -8,6 +8,7 @@
     <code>
         export DISCORD_BOT_EMAIL="xxxxx"
         export DISCORD_BOT_PASSWORD="yyyyy"
+        export DISCORD_BOT_CHANNEL="zzzzz"
     </code>
 </pre>
 
