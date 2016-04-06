@@ -7,7 +7,7 @@
   "templates": "./templates",
   "hooks": [
       { "hook": "static:app.load", "method": "load" },
-      { "hook": "filter:post.get", "method": "appendData" },
+      { "hook": "filter:post.save", "method": "userPosted" },
       { "hook": "filter:admin.header.build", "method": "adminMenu"}
   ],
   "compatibility": "~1.0.0"

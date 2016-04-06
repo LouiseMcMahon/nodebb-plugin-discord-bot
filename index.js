@@ -2,13 +2,18 @@
 var DiscordClient = require("discord.io");
 var winston = module.parent.require('winston');
 var db = module.parent.require('./database');
+var Posts = module.parent.require('./posts');
+var Topics = module.parent.require('./topics');
+var User = module.parent.require('./user');
 var Package = require("./package.json");
+var siteConfig = module.parent.require('../config.json');
 
 var bot = {}
 var adminRoute = '/admin/plugins/discord-bot';
 var settings = {
 	"botEmail": process.env.DISCORD_BOT_EMAIL || undefined,
-	"botPassword": process.env.DISCORD_BOT_PASSWORD || undefined
+	"botPassword": process.env.DISCORD_BOT_PASSWORD || undefined,
+	"botUpdateChannel": process.env.DISCORD_BOT_CHANNEL || undefined
 };
 
 var NodebbBot = {}
@@ -33,7 +38,8 @@ function nodebbBotSettings(req, res, next) {
 	var data = req.body;
 	var newSettings = {
 		botEmail: data.botEmail || '',
-		botPassword: data.botPassword || ''
+		botPassword: data.botPassword || '',
+		botUpdateChannel: data.botUpdateChannel || ''
 	};
 
 	saveSettings(newSettings, res, next);
@@ -61,6 +67,12 @@ function fetchSettings(callback){
 			settings.botPassword = newSettings.botPassword;
 		}
 
+		if(!newSettings.botUpdateChannel){
+			settings.botUpdateChannel = process.env.DISCORD_BOT_CHANNEL || "";
+		}else{
+			settings.botUpdateChannel = newSettings.botUpdateChannel;
+		}
+
 		if (typeof callback === 'function') {
 			callback();
 		}
@@ -86,6 +98,7 @@ function renderAdmin(req, res) {
 	var data = {
 		botEmail: settings.botEmail,
 		botPassword: settings.botPassword,
+		botUpdateChannel: settings.botUpdateChannel,
 		csrf: token
 	};
 
@@ -104,13 +117,13 @@ NodebbBot.load = function(params, callback) {
 		params.router.post('/api' + adminRoute + '/nodebbBotSettings', nodebbBotSettings);
 
 		if (typeof settings.botEmail == undefined){
-			winston.error("botEmail undefined")
+			winston.error("botEmail undefined");
 			return callback(new Error("botEmail undefined"),null)
-		};
+		}
 		if (typeof settings.botPassword == undefined){
-			winston.error("botPassword undefined")
+			winston.error("botPassword undefined");
 			return callback(new Error("botPassword undefined"),null)
-		};
+		}
 
 		bot = new DiscordClient({
 			autorun: true,
@@ -120,12 +133,10 @@ NodebbBot.load = function(params, callback) {
 
 		bot.on("ready", function() {
 			bot.on("message", function(user, userID, channelID, message, rawEvent) {
-				console.log(message);
+				console.log(rawEvent);
 				//if message is directed at the bot
 				if(message.startsWith("<@"+bot["id"]+">")){
 					var command = message.replace("<@"+bot["id"]+">","").trim().toLowerCase();
-					console.log(command);
-
 					getReplies(command,user,userID,function (err,data) {
 						data.forEach(function(entry){
 							bot.sendMessage({
@@ -134,7 +145,7 @@ NodebbBot.load = function(params, callback) {
 							});
 						});
 					})
-				};
+				}
 			});
 		});
 
@@ -143,16 +154,62 @@ NodebbBot.load = function(params, callback) {
 	});
 };
 
+function getPostURl(pid,tid,callback){
+	Topics.getTopicField(tid,"slug",function (err,slug) {
+		var url = siteConfig.url+"/topic/"+slug+"/"+pid;
+		return callback(err,url)
+	})
 
-NodebbBot.appendData =  function (data,callback) {
-	console.log(data);
-	var message = ""
-	message = data["content"]
-	bot.sendMessage({
-		to: "167038734745862144",
-		message: message
-	});
-	return callback(null,data);
+}
+
+function getDiscordUserName(uid,callback){
+	User.getUsernamesByUids([uid],function (err,userName) {
+		callback(null,userName[0]);
+	})
+}
+
+function stringAbbreviate(str, max, suffix)
+{
+	if((str = str.replace(/^\s+|\s+$/g, '').replace(/[\r\n]*\s*[\r\n]+/g, ' ').replace(/[ \t]+/g, ' ')).length <= max)
+	{
+		return str;
+	}
+	var
+		abbr = '',
+		str = str.split(' '),
+		suffix = (typeof suffix !== 'undefined' ? suffix : ' ...'),
+		max = (max - suffix.length);
+
+	for(var len = str.length, i = 0; i < len; i ++)
+	{
+		if((abbr + str[i]).length < max)
+		{
+			abbr += str[i] + ' ';
+		}
+		else { break; }
+	}
+	return abbr.replace(/[ ]$/g, '') + suffix;
+}
+
+NodebbBot.userPosted = function (data,callback) {
+	getPostURl(data["pid"],data["tid"],function (err,postURL) {
+		getDiscordUserName(data["uid"],function (err,userName) {
+			console.log(data);
+			var postContent = stringAbbreviate(data["content"],100,"...");
+
+			var message = "";
+			message = "User "+userName+" has posted \n\n";
+			message = message+postContent+"\n\n";
+			message = message+postURL;
+			bot.sendMessage({
+				to: settings.botUpdateChannel,
+				message: message
+			});
+			return callback(null,data);
+
+		})
+	})
+
 };
 
 NodebbBot.adminMenu = function(custom_header, callback) {

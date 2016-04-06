@@ -13,12 +13,16 @@
 
 <h3>Database Stored configuration:</h3>
 <form id="discord-bot">
-  <label for="botEmail">Bot Email</label><br />
-  <input type="text" id="botEmail" name="botEmail" value="{botEmail}" title="Bot Email" class="form-control input-lg" placeholder="Bot Email Address"><br />
+    <label for="botEmail">Bot Email</label><br />
+    <input type="text" id="botEmail" name="botEmail" value="{botEmail}" title="Bot Email" class="form-control input-lg" placeholder="Bot Email Address"><br />
 
-  <label for="botPassword">Bot Password</label><br />
-  <input type="text" id="botPassword" name="botPassword" value="{botPassword}" title="Bot Password" class="form-control input-lg" placeholder="botPassword"><br />
-  <button class="btn btn-primary" type="submit">Save</button>
+    <label for="botPassword">Bot Password</label><br />
+    <input type="text" id="botPassword" name="botPassword" value="{botPassword}" title="Bot Password" class="form-control input-lg" placeholder="Bots Password"><br />
+
+    <label for="botUpdateChannel">Bot Update Channel ID</label><br />
+    <input type="text" id="botUpdateChannel" name="botUpdateChannel" value="{botUpdateChannel}" title="Bot Update Channel ID" class="form-control input-lg" placeholder="Bot Update Channel ID"><br />
+
+    <button class="btn btn-primary" type="submit">Save</button>
 </form>
 
 
