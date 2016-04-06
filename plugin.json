@@ -1,0 +1,14 @@
+{
+  "id": "nodebb-plugin-discord-bot",
+  "name": "Mockbot",
+  "description": "A NodeBB plugin that integrates with discord and gives notifications of new posts",
+  "url": "https://github.com/LewisMcMahon/nodebb-plugin-mockbot",
+  "library": "./index.js",
+  "templates": "./templates",
+  "hooks": [
+      { "hook": "static:app.load", "method": "load" },
+      { "hook": "filter:post.get", "method": "appendData" },
+      { "hook": "filter:admin.header.build", "method": "adminMenu"}
+  ],
+  "compatibility": "~1.0.0"
+}
