@@ -16,10 +16,9 @@ var settings = {
 	"botPassword": process.env.DISCORD_BOT_PASSWORD || undefined,
 	"botUpdateChannel": process.env.DISCORD_BOT_CHANNEL || undefined
 };
+
 var membersToWelcome = [];
-
 var NodebbBot = {};
-
 
 //should return a list of repplies as the second callback argument and an error only if their is an error as the first callback arguemnt
 function getReplies(command,fromDiscordUser,fromDiscordUserID,callback) {
@@ -160,7 +159,6 @@ NodebbBot.load = function(params, callback) {
 		});
 
 		bot.on("debug", function(rawEvent) {
-			console.log(rawEvent);
 			if (rawEvent.t == "GUILD_MEMBER_ADD"){
 				var discordUsername = rawEvent.d["user"]["username"].toString();
 				var discordUserID = rawEvent.d["user"]["id"].toString();
@@ -195,8 +193,6 @@ NodebbBot.load = function(params, callback) {
 
 	});
 };
-
-
 
 function getPostURl(pid,tid,callback){
 	Topics.getTopicField(tid,"slug",function (err,slug) {
