@@ -27,3 +27,13 @@ The plugin has two hooks you can use just as you would do normal NodeBB hooks.
 * `fromDiscordUser` is a string containing the discord usename of the user that sent the command.
 * `fromDiscordUserID` is a string containing the discord ID of the user that sent the command.
 
+###static:nodebbbot.newmemberjoined
+`static:nodebbbot.newmemberjoined` passes `discordUsername` and `discordUserID` when ever a user connects to any server that your bot is in.
+* `discordUsername` is a string containing the discord usename of the user that sent the command.
+* `discordUserID` is a string containing the discord ID of the user that sent the command.
+
+###filter:nodebbbot.welcome.message
+`filter:nodebbbot.welcome.message` passes `discordUsername`, `discordUserID` and `welcomeMessage` overwrite `welcomeMessage` as you wish it will be direct message to the user
+* `discordUsername` is a string containing the discord usename of the user that sent the command.
+* `discordUserID` is a string containing the discord ID of the user that sent the command.
+* `welcomeMessage`  is a string containing an the current welcome message overwrite at will.

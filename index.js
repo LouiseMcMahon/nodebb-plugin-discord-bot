@@ -158,10 +158,28 @@ NodebbBot.load = function(params, callback) {
 			});
 		});
 
-		callback(null,undefined);
+		bot.on('debug', function(rawEvent) {
+			if (rawEvent.t == "GUILD_MEMBER_ADD"){
+				var discordUsername = rawEvent.d["user"]["username"].toString();
+				var discordUserID = rawEvent.d["user"]["id"].toString();
+				plugins.fireHook('static:nodebbbot.newmemberjoined', {discordUsername : discordUsername, discordUserID : discordUserID},function (err) {
+
+					var welcomeMessage = "Welcome <@"+rawEvent.d["user"]["id"]+"> to our comunity";
+					plugins.fireHook('filter:nodebbbot.welcome.message', {discordUsername : discordUsername, discordUserID : discordUserID, welcomeMessage : welcomeMessage});
+					sendMessage(welcomeMessage,discordUserID,function (err,data) {
+
+					})
+
+				});
+			}
+		});
+
+		return callback(null,data);
 
 	});
 };
+
+
 
 function getPostURl(pid,tid,callback){
 	Topics.getTopicField(tid,"slug",function (err,slug) {
@@ -200,6 +218,14 @@ function stringAbbreviate(str, max, suffix)
 	return abbr.replace(/[ ]$/g, '') + suffix;
 }
 
+function sendMessage(message,channel,callback){
+	bot.sendMessage({
+		to: channel,
+		message: message
+	});
+	return(null,true);
+}
+
 NodebbBot.userPosted = function (data,callback) {
 	getPostURl(data["pid"],data["tid"],function (err,postURL) {
 		getDiscordUserName(data["uid"],function (err,userName) {
@@ -209,12 +235,9 @@ NodebbBot.userPosted = function (data,callback) {
 			message = "User "+userName+" has posted \n\n";
 			message = message+postContent+"\n\n";
 			message = message+postURL;
-			bot.sendMessage({
-				to: settings.botUpdateChannel,
-				message: message
-			});
-			return callback(null,data);
-
+			sendMessage(message,settings.botUpdateChannel,function (err,data) {
+				return callback(null,data);
+			})
 		})
 	})
 
