@@ -1,21 +1,22 @@
 "use strict";
 var DiscordClient = require("discord.io");
-var winston = module.parent.require('winston');
-var db = module.parent.require('./database');
-var Posts = module.parent.require('./posts');
-var Topics = module.parent.require('./topics');
-var User = module.parent.require('./user');
-var plugins = module.parent.require('./plugins');
+var winston = module.parent.require("winston");
+var db = module.parent.require("./database");
+var Posts = module.parent.require("./posts");
+var Topics = module.parent.require("./topics");
+var User = module.parent.require("./user");
+var plugins = module.parent.require("./plugins");
 var Package = require("./package.json");
-var siteConfig = module.parent.require('../config.json');
+var siteConfig = module.parent.require("../config.json");
 
 var bot = {};
-var adminRoute = '/admin/plugins/discord-bot';
+var adminRoute = "/admin/plugins/discord-bot";
 var settings = {
 	"botEmail": process.env.DISCORD_BOT_EMAIL || undefined,
 	"botPassword": process.env.DISCORD_BOT_PASSWORD || undefined,
 	"botUpdateChannel": process.env.DISCORD_BOT_CHANNEL || undefined
 };
+var membersToWelcome = [];
 
 var NodebbBot = {};
 
@@ -32,13 +33,13 @@ function getReplies(command,fromDiscordUser,fromDiscordUserID,callback) {
 		var helpMessage = "<@"+fromDiscordUserID+">";
 
 		//helpMessage is a string you should append the help message for your plugin to it
-		plugins.fireHook('filter:nodebbbot.helpmessage', {helpMessage: helpMessage});
+		plugins.fireHook("filter:nodebbbot.helpmessage", {helpMessage: helpMessage});
 
 		replies.push(helpMessage);
 	}
 
 	//replys is a list you should just push a repply onto the list the bot will say each reply separately in the order they are
-	plugins.fireHook('filter:nodebbbot.command.reply', {command : command ,replies: replies,fromDiscordUser:fromDiscordUser,fromDiscordUserID:fromDiscordUserID});
+	plugins.fireHook("filter:nodebbbot.command.reply", {command : command ,replies: replies,fromDiscordUser:fromDiscordUser,fromDiscordUserID:fromDiscordUserID});
 
 	return callback(null,replies);
 
@@ -47,9 +48,9 @@ function getReplies(command,fromDiscordUser,fromDiscordUserID,callback) {
 function nodebbBotSettings(req, res, next) {
 	var data = req.body;
 	var newSettings = {
-		botEmail: data.botEmail || '',
-		botPassword: data.botPassword || '',
-		botUpdateChannel: data.botUpdateChannel || ''
+		botEmail: data.botEmail || "",
+		botPassword: data.botPassword || "",
+		botUpdateChannel: data.botUpdateChannel || ""
 	};
 
 	saveSettings(newSettings, res, next);
@@ -59,7 +60,7 @@ function fetchSettings(callback){
 	db.getObjectFields(Package.name, Object.keys(settings), function(err, newSettings){
 		if (err) {
 			winston.error(err.message);
-			if (typeof callback === 'function') {
+			if (typeof callback === "function") {
 				callback(err);
 			}
 			return;
@@ -83,7 +84,7 @@ function fetchSettings(callback){
 			settings.botUpdateChannel = newSettings.botUpdateChannel;
 		}
 
-		if (typeof callback === 'function') {
+		if (typeof callback === "function") {
 			callback();
 		}
 	});
@@ -92,12 +93,13 @@ function fetchSettings(callback){
 function saveSettings(settings, res, next) {
 	db.setObject(Package.name, settings, function(err) {
 		if (err) {
-			return next(makeError(err));
+
+			return next(winston.error(err.message));
 		}
 
 		fetchSettings(function () {
 		});
-		res.json('Saved!');
+		res.json("Saved!");
 	});
 }
 
@@ -112,7 +114,7 @@ function renderAdmin(req, res) {
 		csrf: token
 	};
 
-	res.render('admin/plugins/discord-bot', data);
+	res.render("admin/plugins/discord-bot", data);
 }
 
 NodebbBot.load = function(params, callback) {
@@ -123,8 +125,8 @@ NodebbBot.load = function(params, callback) {
 		}
 
 		params.router.get(adminRoute, params.middleware.applyCSRF, params.middleware.admin.buildHeader, renderAdmin);
-		params.router.get('/api' + adminRoute, params.middleware.applyCSRF, renderAdmin);
-		params.router.post('/api' + adminRoute + '/nodebbBotSettings', nodebbBotSettings);
+		params.router.get("/api" + adminRoute, params.middleware.applyCSRF, renderAdmin);
+		params.router.post("/api" + adminRoute + "/nodebbBotSettings", nodebbBotSettings);
 
 		if (typeof settings.botEmail == undefined){
 			winston.error("botEmail undefined");
@@ -148,29 +150,44 @@ NodebbBot.load = function(params, callback) {
 					var command = message.replace("<@"+bot["id"]+">","").trim().toLowerCase();
 					getReplies(command,user,userID,function (err,data) {
 						data.forEach(function(entry){
-							bot.sendMessage({
-								to: channelID,
-								message: entry
+							sendMessage(entry,channelID,function (err,data) {
+								return callback(null,data);
 							});
 						});
-					})
+					});
 				}
 			});
 		});
 
-		bot.on('debug', function(rawEvent) {
+		bot.on("debug", function(rawEvent) {
+			console.log(rawEvent);
 			if (rawEvent.t == "GUILD_MEMBER_ADD"){
 				var discordUsername = rawEvent.d["user"]["username"].toString();
 				var discordUserID = rawEvent.d["user"]["id"].toString();
-				plugins.fireHook('static:nodebbbot.newmemberjoined', {discordUsername : discordUsername, discordUserID : discordUserID},function (err) {
+				//have to wait untill the member is online to send the welcome message
+				membersToWelcome.push(discordUserID);
+				plugins.fireHook("static:nodebbbot.newmemberjoined", {discordUsername : discordUsername, discordUserID : discordUserID},function (err) {});
 
+			}else if (rawEvent.t == "PRESENCE_UPDATE"){
+
+				var discordUserID = rawEvent.d["user"]["id"].toString();
+				//if it was a member we need to welcome
+				if ( membersToWelcome.indexOf(discordUserID) >= 0){
+
+					//send the welcome message
+					var discordUsername = rawEvent.d["user"]["username"].toString();
 					var welcomeMessage = "Welcome <@"+rawEvent.d["user"]["id"]+"> to our comunity";
-					plugins.fireHook('filter:nodebbbot.welcome.message', {discordUsername : discordUsername, discordUserID : discordUserID, welcomeMessage : welcomeMessage});
-					sendMessage(welcomeMessage,discordUserID,function (err,data) {
+					plugins.fireHook("filter:nodebbbot.welcome.message", {discordUsername : discordUsername, discordUserID : discordUserID, welcomeMessage : welcomeMessage});
+					sendMessage(welcomeMessage,discordUserID,function (err,data) {});
 
-					})
-
-				});
+					//remove the user from the to welcome list
+					for (var i=membersToWelcome.length-1; i>=0; i--) {
+						if (membersToWelcome[i] === discordUserID) {
+							membersToWelcome.splice(i, 1);
+							break;
+						}
+					}
+				}
 			}
 		});
 
@@ -184,51 +201,64 @@ NodebbBot.load = function(params, callback) {
 function getPostURl(pid,tid,callback){
 	Topics.getTopicField(tid,"slug",function (err,slug) {
 		var url = siteConfig.url+"/topic/"+slug+"/"+pid;
-		return callback(err,url)
-	})
+		return callback(err,url);
+	});
 
 }
 
 function getDiscordUserName(uid,callback){
 	User.getUsernamesByUids([uid],function (err,userName) {
 		callback(null,userName[0]);
-	})
+	});
 }
 
 function stringAbbreviate(str, max, suffix)
 {
-	if((str = str.replace(/^\s+|\s+$/g, '').replace(/[\r\n]*\s*[\r\n]+/g, ' ').replace(/[ \t]+/g, ' ')).length <= max)
+	if((str = str.replace(/^\s+|\s+$/g, "").replace(/[\r\n]*\s*[\r\n]+/g, " ").replace(/[ \t]+/g, " ")).length <= max)
 	{
 		return str;
 	}
 	var
-		abbr = '',
-		str = str.split(' '),
-		suffix = (typeof suffix !== 'undefined' ? suffix : ' ...'),
+		abbr = "",
+		str = str.split(" "),
+		suffix = (typeof suffix !== "undefined" ? suffix : " ..."),
 		max = (max - suffix.length);
 
 	for(var len = str.length, i = 0; i < len; i ++)
 	{
 		if((abbr + str[i]).length < max)
 		{
-			abbr += str[i] + ' ';
+			abbr += str[i] + " ";
 		}
 		else { break; }
 	}
-	return abbr.replace(/[ ]$/g, '') + suffix;
+	return abbr.replace(/[ ]$/g, "") + suffix;
 }
 
 function sendMessage(message,channel,callback){
 	bot.sendMessage({
 		to: channel,
 		message: message
+	},function (err,data) {
+		if (err){
+			winston.error("[NodeBB Bot] encountered a problem while sending a message", err.message);
+			return callback(err,null);
+		}
+		else{
+			return callback(null,data);
+		}
 	});
-	return(null,true);
 }
 
 NodebbBot.userPosted = function (data,callback) {
 	getPostURl(data["pid"],data["tid"],function (err,postURL) {
+		if (err){
+			winston.error("[NodeBB Bot] encountered a problem while getting the post url", err.message);
+		}
 		getDiscordUserName(data["uid"],function (err,userName) {
+			if (err){
+				winston.error("[NodeBB Bot] encountered a problem while getting the discord Username", err.message);
+			}
 			var postContent = stringAbbreviate(data["content"],100,"...");
 
 			var message = "";
@@ -237,17 +267,16 @@ NodebbBot.userPosted = function (data,callback) {
 			message = message+postURL;
 			sendMessage(message,settings.botUpdateChannel,function (err,data) {
 				return callback(null,data);
-			})
-		})
-	})
-
+			});
+		});
+	});
 };
 
 NodebbBot.adminMenu = function(custom_header, callback) {
 	custom_header.plugins.push({
-		"route": '/plugins/discord-bot',
-		"icon": 'fa-envelope-o',
-		"name": 'Discord Bot'
+		"route": "/plugins/discord-bot",
+		"icon": "fa-envelope-o",
+		"name": "Discord Bot"
 	});
 
 	callback(null, custom_header);
