@@ -25,7 +25,7 @@ function getReplies(command,fromDiscordUser,fromDiscordUserID,callback) {
 	var replies = [];
 
 	if (command == "hello" || command == "hi"){
-		replies.push("<@"+fromUserID+"> hello ");
+		replies.push("<@"+fromDiscordUserID+"> hello ");
 	}
 
 	if (command == "help"){
