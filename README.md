@@ -15,7 +15,7 @@ To get the channel ID coppy the link to the channel and the number you need is t
 
 ##Hooks
 
-The plugin has two hooks you can use just as you would do normal NodeBB hooks.
+The plugin has hooks you can use just as you would do normal NodeBB hooks.
 
 ###filter:nodebbbot.helpmessage
 `filter:nodebbbot.helpmessage` passes `helpMessage` as string you should append the help message for your plugin to it.
