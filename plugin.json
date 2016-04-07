@@ -8,7 +8,8 @@
   "hooks": [
       { "hook": "static:app.load", "method": "load" },
       { "hook": "filter:post.save", "method": "userPosted" },
-      { "hook": "filter:admin.header.build", "method": "adminMenu"}
+      { "hook": "filter:admin.header.build", "method": "adminMenu"},
+      { "hook": "filter:nodebbbot.command.repply", "method": "repply"}
   ],
   "compatibility": "~1.0.0"
 }

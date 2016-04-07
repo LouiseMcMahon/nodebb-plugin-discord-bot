@@ -5,6 +5,7 @@ var db = module.parent.require('./database');
 var Posts = module.parent.require('./posts');
 var Topics = module.parent.require('./topics');
 var User = module.parent.require('./user');
+var plugins = module.parent.require('./plugins');
 var Package = require("./package.json");
 var siteConfig = module.parent.require('../config.json');
 
@@ -20,18 +21,27 @@ var NodebbBot = {};
 
 
 //should return a list of repplies as the second callback argument and an error only if their is an error as the first callback arguemnt
-function getReplies(command,fromUser,fromUserID,callback) {
-	var repplys = [];
+function getReplies(command,fromDiscordUser,fromDiscordUserID,callback) {
+	var replies = [];
 
 	if (command == "hello" || command == "hi"){
-		repplys.push("<@"+fromUserID+"> hello ");
+		replies.push("<@"+fromUserID+"> hello ");
 	}
 
 	if (command == "help"){
-		repplys.push("<@"+fromUserID+"> im just a bot you might want to call 999");
+		var helpMessage = "<@"+fromDiscordUserID+">";
+
+		//helpMessage is a string you should append the help message for your plugin to it
+		plugins.fireHook('filter:nodebbbot.helpmessage', {helpMessage: helpMessage});
+
+		replies.push(helpMessage);
 	}
 
-	return callback(null,repplys);
+	//replys is a list you should just push a repply onto the list the bot will say each reply separately in the order they are
+	plugins.fireHook('filter:nodebbbot.command.reply', {command : command ,replies: replies,fromDiscordUser:fromDiscordUser,fromDiscordUserID:fromDiscordUserID});
+
+	return callback(null,replies);
+
 }
 
 function nodebbBotSettings(req, res, next) {
@@ -133,7 +143,6 @@ NodebbBot.load = function(params, callback) {
 
 		bot.on("ready", function() {
 			bot.on("message", function(user, userID, channelID, message, rawEvent) {
-				console.log(rawEvent);
 				//if message is directed at the bot
 				if(message.startsWith("<@"+bot["id"]+">")){
 					var command = message.replace("<@"+bot["id"]+">","").trim().toLowerCase();
@@ -194,7 +203,6 @@ function stringAbbreviate(str, max, suffix)
 NodebbBot.userPosted = function (data,callback) {
 	getPostURl(data["pid"],data["tid"],function (err,postURL) {
 		getDiscordUserName(data["uid"],function (err,userName) {
-			console.log(data);
 			var postContent = stringAbbreviate(data["content"],100,"...");
 
 			var message = "";

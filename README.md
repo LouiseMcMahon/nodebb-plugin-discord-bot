@@ -12,3 +12,18 @@ export DISCORD_BOT_CHANNEL="zzzzz"
 
 To get the channel ID coppy the link to the channel and the number you need is the last long number IE for
 `https://discordapp.com/channels/167038734745862144/167038734745862144` the id number would be `167038734745862144`.
+
+##Hooks
+
+The plugin has two hooks you can use just as you would do normal NodeBB hooks.
+
+###filter:nodebbbot.helpmessage
+`filter:nodebbbot.helpmessage` passes `helpMessage` as string you should append the help message for your plugin to it.
+
+###filter:nodebbbot.command.reply
+`filter:nodebbbot.command.reply` passes `command`, `replies`, `fromDiscordUser` and `fromDiscordUserID`
+* `command` is a string it contains what ever the user sent to your bot minus the `@bot` and with any white space around the string trimmed.
+* `replies` is an array of all the messages that the bot will be send to the channel that the command was said in please `.push()` your reply on to it.
+* `fromDiscordUser` is a string containing the discord usename of the user that sent the command.
+* `fromDiscordUserID` is a string containing the discord ID of the user that sent the command.
+
