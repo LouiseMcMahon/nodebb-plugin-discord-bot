@@ -13,6 +13,8 @@ export DISCORD_BOT_CHANNEL="zzzzz"
 To get the channel ID coppy the link to the channel and the number you need is the last long number IE for
 `https://discordapp.com/channels/167038734745862144/167038734745862144` the id number would be `167038734745862144`.
 
+The welcome message that is sent to any member that joins a server can be set in the admin area or via a hook as documented bellow.
+
 ##Hooks
 
 The plugin has hooks you can use just as you would do normal NodeBB hooks.

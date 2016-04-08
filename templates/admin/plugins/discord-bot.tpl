@@ -23,6 +23,9 @@
     <label for="botUpdateChannel">Bot Update Channel ID</label><br />
     <input type="text" id="botUpdateChannel" name="botUpdateChannel" value="{botUpdateChannel}" title="Bot Update Channel ID" class="form-control input-lg" placeholder="Bot Update Channel ID"><br />
 
+    <label for="welcomeMessage">Welcome Message</label><br />
+    <textarea type="text" id="welcomeMessage" name="welcomeMessage" title="Welcome Message" class="form-control input-lg" placeholder="Welcome Message">{welcomeMessage}</textarea>
+
     <button class="btn btn-primary" type="submit">Save</button>
 </form>
 

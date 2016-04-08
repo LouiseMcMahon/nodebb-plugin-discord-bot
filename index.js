@@ -14,7 +14,8 @@ var adminRoute = "/admin/plugins/discord-bot";
 var settings = {
 	"botEmail": process.env.DISCORD_BOT_EMAIL || undefined,
 	"botPassword": process.env.DISCORD_BOT_PASSWORD || undefined,
-	"botUpdateChannel": process.env.DISCORD_BOT_CHANNEL || undefined
+	"botUpdateChannel": process.env.DISCORD_BOT_CHANNEL || undefined,
+	"welcomeMessage" : undefined
 };
 
 var membersToWelcome = [];
@@ -49,7 +50,8 @@ function nodebbBotSettings(req, res, next) {
 	var newSettings = {
 		botEmail: data.botEmail || "",
 		botPassword: data.botPassword || "",
-		botUpdateChannel: data.botUpdateChannel || ""
+		botUpdateChannel: data.botUpdateChannel || "",
+		welcomeMessage: data.welcomeMessage || ""
 	};
 
 	saveSettings(newSettings, res, next);
@@ -83,6 +85,12 @@ function fetchSettings(callback){
 			settings.botUpdateChannel = newSettings.botUpdateChannel;
 		}
 
+		if(!newSettings.welcomeMessage){
+			settings.welcomeMessage = "";
+		}else{
+			settings.welcomeMessage = newSettings.welcomeMessage;
+		}
+
 		if (typeof callback === "function") {
 			callback();
 		}
@@ -110,6 +118,7 @@ function renderAdmin(req, res) {
 		botEmail: settings.botEmail,
 		botPassword: settings.botPassword,
 		botUpdateChannel: settings.botUpdateChannel,
+		welcomeMessage: settings.welcomeMessage,
 		csrf: token
 	};
 
@@ -129,12 +138,17 @@ NodebbBot.load = function(params, callback) {
 
 		if (typeof settings.botEmail == undefined){
 			winston.error("botEmail undefined");
-			return callback(new Error("botEmail undefined"),null)
+			return callback(new Error("botEmail undefined"),null);
 		}
 		if (typeof settings.botPassword == undefined){
 			winston.error("botPassword undefined");
-			return callback(new Error("botPassword undefined"),null)
+			return callback(new Error("botPassword undefined"),null);
 		}
+		if (typeof settings.botUpdateChannel == undefined){
+			winston.error("botUpdateChannel undefined");
+			return callback(new Error("botUpdateChannel undefined"),null)
+		}
+
 
 		bot = new DiscordClient({
 			autorun: true,
@@ -174,7 +188,7 @@ NodebbBot.load = function(params, callback) {
 
 					//send the welcome message
 					var discordUsername = rawEvent.d["user"]["username"].toString();
-					var welcomeMessage = "Welcome <@"+rawEvent.d["user"]["id"]+"> to our comunity";
+					var welcomeMessage = settings.welcomeMessage || "";
 					plugins.fireHook("filter:nodebbbot.welcome.message", {discordUsername : discordUsername, discordUserID : discordUserID, welcomeMessage : welcomeMessage});
 					sendMessage(welcomeMessage,discordUserID,function (err,data) {});
 
