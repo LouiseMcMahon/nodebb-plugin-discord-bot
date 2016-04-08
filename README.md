@@ -18,6 +18,9 @@ To get the channel ID coppy the link to the channel and the number you need is t
 
 The welcome message that is sent to any member that joins a server can be set in the admin area or via a hook as documented bellow.
 
+##Files
+The plugin will generate a  file named `tenc` in the nodebb root please make sure it can as this is where it stores the discord auth token.
+
 ##Hooks
 
 The plugin has hooks you can use just as you would do normal NodeBB hooks.
