@@ -190,15 +190,19 @@ NodebbBot.load = function(params, callback) {
 					var discordUsername = rawEvent.d["user"]["username"].toString();
 					var welcomeMessage = settings.welcomeMessage || "";
 					plugins.fireHook("filter:nodebbbot.welcome.message", {discordUsername : discordUsername, discordUserID : discordUserID, welcomeMessage : welcomeMessage});
-					sendMessage(welcomeMessage,discordUserID,function (err,data) {});
-
-					//remove the user from the to welcome list
-					for (var i=membersToWelcome.length-1; i>=0; i--) {
-						if (membersToWelcome[i] === discordUserID) {
-							membersToWelcome.splice(i, 1);
-							break;
+					sendMessage(welcomeMessage,discordUserID,function (err,data) {
+						if(err){
+							winston.error("[NodeBB Bot] encountered a problem while sending the welcome message", err.message);
+						}else{
+							//remove the user from the to welcome list
+							for (var i=membersToWelcome.length-1; i>=0; i--) {
+								if (membersToWelcome[i] === discordUserID) {
+									membersToWelcome.splice(i, 1);
+									break;
+								}
+							}
 						}
-					}
+					});
 				}
 			}
 		});
