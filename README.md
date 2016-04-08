@@ -1,6 +1,6 @@
 # Discord Bot
-![https://www.npmjs.com/package/nodebb-plugin-discord-bot](https://img.shields.io/npm/v/nodebb-plugin-discord-bot.svg)
-![https://david-dm.org/lewismcmahon/nodebb-plugin-discord-bot](https://david-dm.org/lewismcmahon/nodebb-plugin-discord-bot.svg)
+[![Version](https://img.shields.io/npm/v/nodebb-plugin-discord-bot.svg)](https://www.npmjs.com/package/nodebb-plugin-discord-bot)
+[![Dependencies](https://david-dm.org/lewismcmahon/nodebb-plugin-discord-bot.svg)](https://david-dm.org/lewismcmahon/nodebb-plugin-discord-bot)
 
 A bot for discord that integrates with NodeBB and gives notifications of new posts.
 
