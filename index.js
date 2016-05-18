@@ -259,28 +259,31 @@ function sendMessage(message,channel,callback){
 			return callback(err,null);
 		}
 		else{
+			console.log(data);
 			return callback(null,data);
 		}
 	});
 }
 
-NodebbBot.userPosted = function (data,callback) {
-	getPostURl(data["pid"],data["tid"],function (err,postURL) {
+NodebbBot.userPosted = function (postData,callback) {
+	console.log(postData);
+	getPostURl(postData["pid"],postData["tid"],function (err,postURL) {
 		if (err){
 			winston.error("[NodeBB Bot] encountered a problem while getting the post url", err.message);
 		}
-		getDiscordUserName(data["uid"],function (err,userName) {
+		getDiscordUserName(postData["uid"],function (err,userName) {
 			if (err){
 				winston.error("[NodeBB Bot] encountered a problem while getting the discord Username", err.message);
 			}
-			var postContent = stringAbbreviate(data["content"],100,"...");
+			var postContent = stringAbbreviate(postData["content"],100,"...");
 
 			var message = "";
 			message = "User "+userName+" has posted \n\n";
 			message = message+postContent+"\n\n";
 			message = message+postURL;
-			sendMessage(message,settings.botUpdateChannel,function (err,data) {
-				return callback(null,data);
+			sendMessage(message,settings.botUpdateChannel,function (err,messageData) {
+
+				return callback(null,postData);
 			});
 		});
 	});
