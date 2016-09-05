@@ -1,6 +1,6 @@
 {
   "name": "nodebb-plugin-discord-bot",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A NodeBB plugin that integrates with discord and gives notifications of new posts",
   "main": "index.js",
   "scripts": {
@@ -8,18 +8,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LewisMcMahon/nodebb-plugin-nodebb-plugin-discord-bot.git"
+    "url": "git+https://github.com/louiseMcMahon/nodebb-plugin-nodebb-plugin-discord-bot.git"
   },
   "keywords": [
     "nodebb",
     "discord"
   ],
-  "author": "Lewis McMahon <lewis@lewismcmahon.co.uk>",
+  "author": "louise McMahon <louise@louisemcmahon.co.uk>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/LewisMcMahon/nodebb-plugin-nodebb-plugin-discord-bot/issues"
+    "url": "https://github.com/louiseMcMahon/nodebb-plugin-nodebb-plugin-discord-bot/issues"
   },
-  "homepage": "https://github.com/LewisMcMahon/nodebb-plugin-nodebb-plugin-discord-bot#readme",
+  "homepage": "https://github.com/louiseMcMahon/nodebb-plugin-nodebb-plugin-discord-bot#readme",
   "nbbpm": {
     "compatibility": "^1.0.0"
   },
